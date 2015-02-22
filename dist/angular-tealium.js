@@ -20,7 +20,7 @@
              */
             function udoService(config)
             {
-                return viewMap[config.viewId] || genericView;
+                return viewMap[config.view_id] || genericView;
             }
 
             /**
@@ -51,17 +51,17 @@
             /**
              * Configuration set by the class.
              * This is the place where default configuration lies.
-             * @type {{account: string, defaultPath: string, environment: string, profile: string, suppressFirstView: boolean, uiSelectors: string}}
+             * @type {{account: string, environment: string, profile: string, suppress_first_view: boolean, ui_selectors: string, view_id: *}}
              */
             var configuration =
             {
                 account: "",
-                defaultPath: "/",
                 environment: "dev",
-                injectTealium: true,
+                inject_tealium: true,
                 profile: "",
-                suppressFirstView: true,
-                uiSelectors: '.trackable, input'
+                suppress_first_view: true,
+                ui_selectors: '.trackable, input',
+                view_id: "/"
             };
 
             /**
@@ -106,7 +106,7 @@
                 {
                     var configuration = populateObjectWithData({}, configuration);
 
-                    configuration.viewId = $location.path();
+                    configuration.view_id = $location.path();
 
                     return configuration;
                 }
@@ -144,7 +144,7 @@
 
                     $window.utag.view(udo);
 
-                    angular.element(document.querySelectorAll(configuration.uiSelectors))
+                    angular.element(document.querySelectorAll(configuration.ui_selectors))
                         .bind('click', function (e)
                         {
                             link(udo, e);
@@ -162,11 +162,11 @@
             var config = tealium.getConfiguration();
 
             // Should the first view be suppressed?
-            if (config.suppressFirstView)
+            if (config.suppress_first_view)
                 $window.utag_cfg_ovrd = { noview : true };
 
             // Should the Tealium be injected?
-            if (!config.injectTealium)
+            if (!config.inject_tealium)
                 return;
 
             // Injecting tealium script
