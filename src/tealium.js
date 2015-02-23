@@ -10,57 +10,80 @@
         .factory(tealiumUdoName, function ()
         {
             var genericView = {};
-            var viewMap = {};
+            var views = [];
 
-            /**
-             * Gets the view data.
-             *
-             * @param config Tealium configuration.
-             * @returns {*}
-             */
-            function udoService(config)
-            {
-                return viewMap[config.view_id] || genericView;
-            }
-
-            /**
-             * Registers new view in the Tealium udo service.
-             *
-             * @param viewName Name of the view to register.
-             * @param view View data.
-             */
-            udoService.registerView = function (viewName, view)
-            {
-                viewMap[viewName] = view;
-            };
-
-            /**
-             * Registers multiple views in the Tealium UDO service.
-             *
-             * @param {Object.<string, *>} views Views to register.
-             */
-            udoService.registerMultiViews = function (views)
-            {
-                for (var viewName in views)
+            return {
+                /**
+                 * Gets the view based on the configuration.
+                 *
+                 * @param config Configuration passed from tealium service.
+                 * @returns {*} View data.
+                 */
+                getView: function (config)
                 {
-                    if (views.hasOwnProperty(viewName))
+                    var viewsLength = views.length;
+                    for (var viewIndex = 0; viewIndex < viewsLength; viewIndex++)
                     {
-                        viewMap[viewName] = views[viewName];
+                        var view = views[viewIndex];
+
+                        if (view.pathRegex && view.pathRegex.test(config.view_id))
+                        {
+                            return view.data;
+                        }
+                        else if (view.path == config.view_id)
+                        {
+                            return view.data;
+                        }
                     }
+
+                    return genericView;
+                },
+                /**
+                 * Registers multiple views in the Tealium UDO service.
+                 *
+                 * @param {{ [path]: string, [pathRegex]: RegExp, data: * }} viewsToRegister Views to register.
+                 */
+                registerMultiViews: function (viewsToRegister)
+                {
+                    var viewsToRegisterLength = viewsToRegister.length;
+                    for (var viewIndex = 0; viewIndex < viewsToRegisterLength; viewIndex++)
+                    {
+                        views.push(viewsToRegister[viewIndex]);
+                    }
+                },
+                /**
+                 * Registers new view in the Tealium udo service.
+                 *
+                 * @param {string|RegExp} viewName Name of the view to register.
+                 * @param data View data.
+                 */
+                registerView: function (viewName, data)
+                {
+                    var view = {
+                        data: data
+                    };
+
+                    if (viewName instanceof RegExp)
+                    {
+                        view.pathRegex = viewName;
+                    }
+                    else
+                    {
+                        view.path = viewName;
+                    }
+
+                    views.push(view)
+                },
+                /**
+                 * Sets the view data for generic view.
+                 *
+                 * @param view View data to set.
+                 */
+                setGenericView: function (view)
+                {
+                    genericView = view;
                 }
             };
-
-            /**
-             * Sets the view data for generic view.
-             *
-             * @param view View data to set.
-             */
-            udoService.setGenericView = function (view)
-            {
-                genericView = view;
-            };
-
-            return udoService;
         })
         .provider(tealiumName, function ()
         {
@@ -148,22 +171,24 @@
 
                 /**
                  * Informs the application that the view was loaded.
+                 * Binds click events to the elements on the screen.
                  *
-                 * @binds click events to the elements on the screen.
+                 * @param {*} [udoOverrides] Overrides to pass to the udo object.
                  */
-                function view()
+                function view(udoOverrides)
                 {
                     if (!$window.utag)
                         return;
 
-                    var udo = tealiumUdo(getConfiguration());
+                    var udo = tealiumUdo.getView(getConfiguration());
+                    var extendedUdo = populateObjectWithData(udo, udoOverrides);
 
-                    $window.utag.view(udo);
+                    $window.utag.view(extendedUdo);
 
                     angular.element(document.querySelectorAll(configuration.ui_selectors))
                         .bind('click', function (e)
                         {
-                            link(udo, e);
+                            link(extendedUdo, e);
                         });
                 }
 
