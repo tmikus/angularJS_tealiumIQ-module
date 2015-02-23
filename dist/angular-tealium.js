@@ -35,6 +35,22 @@
             };
 
             /**
+             * Registers multiple views in the Tealium UDO service.
+             *
+             * @param {Object.<string, *>} views Views to register.
+             */
+            udoService.registerMultiViews = function (views)
+            {
+                for (var viewName in views)
+                {
+                    if (views.hasOwnProperty(viewName))
+                    {
+                        viewMap[viewName] = views[viewName];
+                    }
+                }
+            };
+
+            /**
              * Sets the view data for generic view.
              *
              * @param view View data to set.
