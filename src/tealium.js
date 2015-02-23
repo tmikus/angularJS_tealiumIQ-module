@@ -46,7 +46,7 @@
 
             return udoService;
         })
-        .provider(tealiumName, ['$location', $windowName, tealiumUdoName, function ($location, $window, tealiumUdo)
+        .provider(tealiumName, function ()
         {
             /**
              * Configuration set by the class.
@@ -96,7 +96,7 @@
             /**
              * Gets the Tealium service used for logging events.
              */
-            this.$get = function ()
+            this.$get = ['$location', $windowName, tealiumUdoName, function ($location, $window, tealiumUdo)
             {
                 /**
                  * Gets the configuration.
@@ -155,8 +155,8 @@
                     getConfiguration: getConfiguration,
                     view: view
                 };
-            };
-        }])
+            }];
+        })
         .run([$windowName, tealiumName, function ($window, tealium)
         {
             var config = tealium.getConfiguration();
