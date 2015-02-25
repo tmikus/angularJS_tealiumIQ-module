@@ -161,15 +161,15 @@
                 {
                     var data = populateObjectWithData({}, udo);
 
+                    if (configuration.get_link_data)
+                    {
+                        populateObjectWithData(data, configuration.get_link_data(e, data));
+                    }
+
                     var customData = (e.target.attributes["data-" + tealiumName] || {}).value;
                     if (customData)
                     {
                         populateObjectWithData(data, JSON.parse(customData));
-                    }
-
-                    if (configuration.get_link_data)
-                    {
-                        populateObjectWithData(data, configuration.get_link_data(e, data));
                     }
 
                     $window.utag.link(data);
