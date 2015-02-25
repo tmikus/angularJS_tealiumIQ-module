@@ -90,12 +90,13 @@
             /**
              * Configuration set by the class.
              * This is the place where default configuration lies.
-             * @type {{account: string, environment: string, profile: string, suppress_first_view: boolean, ui_selectors: string, view_id: *}}
+             * @type {{account: string, environment: string, get_link_data: function, profile: string, suppress_first_view: boolean, ui_selectors: string, view_id: *}}
              */
             var configuration =
             {
                 account: "",
                 environment: "dev",
+                get_link_data: null,
                 inject_tealium: true,
                 profile: "",
                 suppress_first_view: true,
@@ -164,6 +165,11 @@
                     if (customData)
                     {
                         populateObjectWithData(data, JSON.parse(customData));
+                    }
+
+                    if (configuration.get_link_data)
+                    {
+                        populateObjectWithData(data, configuration.get_link_data(e, data));
                     }
 
                     $window.utag.link(data);
