@@ -169,6 +169,8 @@
                     $window.utag.link(data);
                 }
 
+                var lastLinkCallback = null;
+
                 /**
                  * Informs the application that the view was loaded.
                  * Binds click events to the elements on the screen.
@@ -185,11 +187,24 @@
 
                     $window.utag.view(extendedUdo);
 
-                    angular.element(document.querySelectorAll(configuration.ui_selectors))
-                        .bind('click', function (e)
+                    function callback(e)
+                    {
+                        link(extendedUdo, e);
+                    }
+
+                    var elements = document.querySelectorAll(configuration.ui_selectors);
+                    for (var elementIndex = 0; elementIndex < elements.length; elementIndex++)
+                    {
+                        var element = elements[elementIndex];
+                        if (lastLinkCallback)
                         {
-                            link(extendedUdo, e);
-                        });
+                            element.removeEventListener("click", lastLinkCallback);
+                        }
+
+                        element.addEventListener("click", callback);
+                    }
+
+                    lastLinkCallback = callback;
                 }
 
                 return {
