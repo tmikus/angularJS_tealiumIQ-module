@@ -59,7 +59,8 @@
                  */
                 registerView: function (viewName, data)
                 {
-                    var view = {
+                    var view =
+                    {
                         data: data
                     };
 
@@ -144,7 +145,7 @@
             /**
              * Gets the Tealium service used for logging events.
              */
-            this.$get = ['$location', $windowName, tealiumUdoName, function ($location, $window, tealiumUdo)
+            this.$get = ['$location', '$timeout', $windowName, tealiumUdoName, function ($location, $timeout, $window, tealiumUdo)
             {
                 /**
                  * Gets the configuration.
@@ -202,7 +203,55 @@
                     $window.utag.link(data);
                 }
 
-                var lastLinkCallback = null;
+                var elementIndex;
+                var lastClickCallback = null;
+                var lastRegisteredEventListeners = null;
+
+                /**
+                 * Performs re-indexing of click listeners on the current page.
+                 *
+                 * @param [udoOverrides] Optional UDO overrides to pass.
+                 */
+                function indexClickListeners(udoOverrides)
+                {
+                    var udo = tealiumUdo.getView(getConfiguration());
+                    var extendedUdo = populateObjectWithData(udo, udoOverrides || {});
+
+                    if (lastClickCallback)
+                    {
+                        for (elementIndex = 0; elementIndex < lastRegisteredEventListeners.length; elementIndex++)
+                        {
+                            lastRegisteredEventListeners[elementIndex].removeEventListener("click", lastClickCallback);
+                        }
+                    }
+
+                    lastClickCallback = function (e)
+                    {
+                        link(extendedUdo, e);
+                    };
+
+                    lastRegisteredEventListeners = document.querySelectorAll(configuration.ui_selectors);
+                    for (elementIndex = 0; elementIndex < lastRegisteredEventListeners.length; elementIndex++)
+                    {
+                        lastRegisteredEventListeners[elementIndex].addEventListener("click", lastClickCallback);
+                    }
+                }
+
+                /**
+                 * Informs the application that the link was clicked
+                 *
+                 * @param {*} [udoOverrides] Overrides to pass to the udo object.
+                 */
+                function customLink(udoOverrides)
+                {
+                    if (!$window.utag)
+                        return;
+
+                    var udo = tealiumUdo.getView(getConfiguration());
+                    var extendedUdo = populateObjectWithData(udo, udoOverrides);
+
+                    $window.utag.link(extendedUdo);
+                }
 
                 /**
                  * Informs the application that the view was loaded.
@@ -220,28 +269,13 @@
 
                     $window.utag.view(extendedUdo);
 
-                    function callback(e)
-                    {
-                        link(extendedUdo, e);
-                    }
-
-                    var elements = document.querySelectorAll(configuration.ui_selectors);
-                    for (var elementIndex = 0; elementIndex < elements.length; elementIndex++)
-                    {
-                        var element = elements[elementIndex];
-                        if (lastLinkCallback)
-                        {
-                            element.removeEventListener("click", lastLinkCallback);
-                        }
-
-                        element.addEventListener("click", callback);
-                    }
-
-                    lastLinkCallback = callback;
+                    $timeout(indexClickListeners.bind(this, udoOverrides));
                 }
 
                 return {
                     getConfiguration: getConfiguration,
+                    indexClickListeners: indexClickListeners,
+                    link: customLink,
                     view: view
                 };
             }];
