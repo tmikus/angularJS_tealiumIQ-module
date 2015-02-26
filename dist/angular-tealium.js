@@ -152,6 +152,25 @@
                 }
 
                 /**
+                 * Parses custom data added to the element.
+                 * @param target Target of the event.
+                 * @param data Data assigned to the element.
+                 * @returns {*}
+                 */
+                function parseCustomData(target, data)
+                {
+                    try
+                    {
+                        var $scope = angular.element(target).scope();
+                        return $scope ? $scope.$eval(data) : eval("(function(){return " + data + "})()");
+                    }
+                    catch (ex)
+                    {
+                        return {};
+                    }
+                }
+
+                /**
                  * Links data from the clicked element to the utag.
                  *
                  * @param udo
@@ -166,10 +185,10 @@
                         populateObjectWithData(data, configuration.get_link_data(e, data));
                     }
 
-                    var customData = (e.target.attributes["data-" + tealiumName] || {}).value;
+                    var customData = (e.currentTarget.attributes["data-" + tealiumName] || {}).value;
                     if (customData)
                     {
-                        populateObjectWithData(data, JSON.parse(customData));
+                        populateObjectWithData(data, parseCustomData(e.currentTarget, customData));
                     }
 
                     $window.utag.link(data);
