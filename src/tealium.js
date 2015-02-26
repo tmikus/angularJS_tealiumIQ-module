@@ -90,7 +90,15 @@
             /**
              * Configuration set by the class.
              * This is the place where default configuration lies.
-             * @type {{account: string, environment: string, get_link_data: function, profile: string, suppress_first_view: boolean, ui_selectors: string, view_id: *}}
+             * @type {{
+             *  account: string,
+             *  environment: string,
+             *  get_link_data: function,
+             *  profile: string,
+             *  suppress_first_view: boolean,
+             *  ui_selectors: string,
+             *  view_id: *
+             * }}
              */
             var configuration =
             {
@@ -242,13 +250,14 @@
         {
             var config = tealium.getConfiguration();
 
-            // Should the first view be suppressed?
-            if (config.suppress_first_view)
-                $window.utag_cfg_ovrd = { noview : true };
-
             // Should the Tealium be injected?
             if (!config.inject_tealium)
                 return;
+
+            // Should the first view be suppressed?
+            // This will work ONLY if tealium is being injected.
+            if (config.suppress_first_view)
+                $window.utag_cfg_ovrd = { noview : true };
 
             // Injecting tealium script
             (function (a, b, c, d)
