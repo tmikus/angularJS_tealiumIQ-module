@@ -6,6 +6,25 @@
     var tealiumUdoName = tealiumName + "Udo";
     var $windowName = "$window";
 
+    /**
+     * Populates object with data.
+     *
+     * @param objectToPopulate Object to populate.
+     * @param data Data.
+     */
+    function populateObjectWithData(objectToPopulate, data)
+    {
+        for (var key in data)
+        {
+            if (data.hasOwnProperty(key))
+            {
+                objectToPopulate[key] = data[key];
+            }
+        }
+
+        return objectToPopulate;
+    }
+
     angular.module(tealiumName, [])
         .factory(tealiumUdoName, function ()
         {
@@ -21,22 +40,21 @@
                  */
                 getView: function (config)
                 {
+                    var viewToReturn = genericView;
+
                     var viewsLength = views.length;
                     for (var viewIndex = 0; viewIndex < viewsLength; viewIndex++)
                     {
                         var view = views[viewIndex];
 
-                        if (view.pathRegex && view.pathRegex.test(config.view_id))
+                        if ((view.pathRegex && view.pathRegex.test(config.view_id)) || (view.path == config.view_id))
                         {
-                            return view.data;
-                        }
-                        else if (view.path == config.view_id)
-                        {
-                            return view.data;
+                            viewToReturn = view.data;
+                            break;
                         }
                     }
 
-                    return genericView;
+                    return populateObjectWithData({}, viewToReturn);
                 },
                 /**
                  * Registers multiple views in the Tealium UDO service.
@@ -112,25 +130,6 @@
                 ui_selectors: '.trackable, input',
                 view_id: "/"
             };
-
-            /**
-             * Populates object with data.
-             *
-             * @param objectToPopulate Object to populate.
-             * @param data Data.
-             */
-            function populateObjectWithData(objectToPopulate, data)
-            {
-                for (var key in data)
-                {
-                    if (data.hasOwnProperty(key))
-                    {
-                        objectToPopulate[key] = data[key];
-                    }
-                }
-
-                return objectToPopulate;
-            }
 
             /**
              * Changes the configuration of the Tealium.
