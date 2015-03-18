@@ -188,9 +188,12 @@
                 {
                     var data = populateObjectWithData({}, udo);
 
-                    if (configuration.get_link_data)
+                    if ((e.currentTarget.attributes["data-" + tealiumName + "-custom-event"] || {}).value !== "true")
                     {
-                        populateObjectWithData(data, configuration.get_link_data(e, data));
+                        if (configuration.get_link_data)
+                        {
+                            populateObjectWithData(data, configuration.get_link_data(e, data));
+                        }
                     }
 
                     var customData = (e.currentTarget.attributes["data-" + tealiumName] || {}).value;
