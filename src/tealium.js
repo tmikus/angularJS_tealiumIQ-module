@@ -146,6 +146,8 @@
              */
             this.$get = ['$location', '$timeout', $windowName, tealiumUdoName, function ($location, $timeout, $window, tealiumUdo)
             {
+                var defaultLinkData = {};
+
                 /**
                  * Gets the configuration.
                  * @returns {*}
@@ -186,7 +188,8 @@
                  */
                 function link(udo, e)
                 {
-                    var data = populateObjectWithData({}, udo);
+                    var data = populateObjectWithData({}, defaultLinkData);
+                   populateObjectWithData(data, udo);
 
                     if ((e.currentTarget.attributes["data-" + tealiumName + "-custom-event"] || {}).value !== "true")
                     {
@@ -217,7 +220,7 @@
                 function indexClickListeners(udoOverrides)
                 {
                     var udo = tealiumUdo.getView(getConfiguration());
-                    var extendedUdo = populateObjectWithData(udo, udoOverrides || {});
+                    populateObjectWithData(udo, udoOverrides || {});
 
                     if (lastClickCallback)
                     {
@@ -229,7 +232,7 @@
 
                     lastClickCallback = function (e)
                     {
-                        link(extendedUdo, e);
+                        link(udo, e);
                     };
 
                     lastRegisteredEventListeners = document.querySelectorAll(configuration.ui_selectors);
@@ -249,10 +252,21 @@
                     if (!$window.utag)
                         return;
 
-                    var udo = tealiumUdo.getView(getConfiguration());
-                    var extendedUdo = populateObjectWithData(udo, udoOverrides);
+                    var data = populateObjectWithData({}, defaultLinkData);
+                    populateObjectWithData(data, tealiumUdo.getView(getConfiguration()));
+                    populateObjectWithData(data, udoOverrides);
 
-                    $window.utag.link(extendedUdo);
+                    $window.utag.link(data);
+                }
+
+                /**
+                 * Sets the default link data.
+                 *
+                 * @param {*} value Value to set.
+                 */
+                function setDefaultLinkData(value)
+                {
+                    defaultLinkData = value;
                 }
 
                 /**
@@ -267,9 +281,9 @@
                         return;
 
                     var udo = tealiumUdo.getView(getConfiguration());
-                    var extendedUdo = populateObjectWithData(udo, udoOverrides);
+                    populateObjectWithData(udo, udoOverrides);
 
-                    $window.utag.view(extendedUdo);
+                    $window.utag.view(udo);
 
                     $timeout(indexClickListeners.bind(this, udoOverrides));
                 }
@@ -278,6 +292,7 @@
                     getConfiguration: getConfiguration,
                     indexClickListeners: indexClickListeners,
                     link: customLink,
+                    setDefaultLinkData: setDefaultLinkData,
                     view: view
                 };
             }];
