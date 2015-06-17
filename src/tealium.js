@@ -49,7 +49,7 @@
 
                         if ((view.pathRegex && view.pathRegex.test(config.view_id)) || (view.path == config.view_id))
                         {
-                            viewToReturn = view.data;
+                            viewToReturn = view.getData ? view.getData() : view.data;
                             break;
                         }
                     }
